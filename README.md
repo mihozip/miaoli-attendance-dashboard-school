@@ -104,7 +104,7 @@ Chrome 基於安全限制，不允許一般未上架 Chrome Web Store 的擴充�
 ### Windows
 
 ```powershell
-irm https://raw.githubusercontent.com/mihozip/miaoli-attendance-dashboard-school/main/uninstall.ps1 | iex
+irm https://raw.githubusercontent.com/mihozip/miaoli-attendance-dashboard-school/main/uninstall-windows.ps1 | iex
 ```
 
 ### macOS
