@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "苗栗縣差勤系統請假人員看版-學校版",
+  "version": "0.5.9",
+  "description": "苗栗縣差勤系統學校版請假人員看版：依處室彙整當日不在人員、差勤類型、返回時間與接續人力異動。",
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications",
+    "tabs",
+    "webRequest"
+  ],
+  "host_permissions": [
+    "https://mswebitr.mlc.edu.tw/*",
+    "https://mlc.sso.edu.tw/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://mswebitr.mlc.edu.tw/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "苗栗縣差勤系統請假人員看版-學校版",
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "128": "icon128.png"
+  }
+}
