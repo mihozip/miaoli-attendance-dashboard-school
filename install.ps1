@@ -3,6 +3,7 @@ $ErrorActionPreference = 'Stop'
 
 $Repo = 'mihozip/miaoli-attendance-dashboard-school'
 $Branch = 'main'
+$InstallerBuild = '2026.08.18.2'
 $InstallDir = Join-Path $env:LOCALAPPDATA 'MiaoliAttendanceDashboardSchool'
 $TempRoot = Join-Path $env:TEMP ('miaoli-attendance-dashboard-' + [Guid]::NewGuid().ToString('N'))
 $ZipPath = Join-Path $TempRoot 'source.zip'
@@ -11,7 +12,7 @@ $ArchiveUrl = "https://github.com/$Repo/archive/refs/heads/$Branch.zip"
 
 Write-Host ''
 Write-Host 'Miaoli Attendance Dashboard - School Edition' -ForegroundColor Cyan
-Write-Host 'PowerShell installer / updater' -ForegroundColor Cyan
+Write-Host ('Windows installer / updater - build ' + $InstallerBuild) -ForegroundColor Cyan
 Write-Host ''
 
 function Get-ChromePath {
@@ -21,7 +22,6 @@ function Get-ChromePath {
     }
 
     $candidates = @()
-
     if ($env:ProgramFiles) {
         $candidates += (Join-Path $env:ProgramFiles 'Google\Chrome\Application\chrome.exe')
     }
@@ -72,26 +72,50 @@ try {
     New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
     Copy-Item -Path (Join-Path $SourceDir.FullName '*') -Destination $InstallDir -Recurse -Force
 
-    Write-Host '[4/4] Opening the extension folder and Chrome extensions page...'
-    Start-Process -FilePath explorer.exe -ArgumentList ('"' + $InstallDir + '"')
+    if (-not (Test-Path -LiteralPath (Join-Path $InstallDir 'manifest.json') -PathType Leaf)) {
+        throw 'Installation verification failed: manifest.json is missing from the target folder.'
+    }
+
+    Write-Host '[4/4] Installation complete. Opening helper windows when available...'
+    Write-Host ''
+    Write-Host 'CORE INSTALLATION SUCCEEDED.' -ForegroundColor Green
+    Write-Host ('Extension folder: ' + $InstallDir)
+
     try { Set-Clipboard -Value $InstallDir } catch { }
 
-    $ChromePath = Get-ChromePath
-    if ($ChromePath) {
-        try {
-            Start-Process -FilePath $ChromePath -ArgumentList 'chrome://extensions/'
+    try {
+        $ExplorerPath = $null
+        if ($env:WINDIR) {
+            $candidateExplorer = Join-Path $env:WINDIR 'explorer.exe'
+            if (Test-Path -LiteralPath $candidateExplorer -PathType Leaf) {
+                $ExplorerPath = $candidateExplorer
+            }
         }
-        catch {
-            Write-Host ('Chrome could not be opened automatically: ' + $_.Exception.Message) -ForegroundColor Yellow
+
+        if ($ExplorerPath) {
+            Start-Process -FilePath $ExplorerPath -ArgumentList ('"' + $InstallDir + '"') -ErrorAction Stop
+        }
+        else {
+            Write-Host 'Explorer could not be located automatically. Open the extension folder manually if needed.' -ForegroundColor Yellow
         }
     }
-    else {
-        Write-Host 'Google Chrome was not found automatically.' -ForegroundColor Yellow
+    catch {
+        Write-Host ('Explorer could not be opened automatically: ' + $_.Exception.Message) -ForegroundColor Yellow
     }
 
-    Write-Host ''
-    Write-Host 'Installation files are ready.' -ForegroundColor Green
-    Write-Host ('Extension folder: ' + $InstallDir)
+    try {
+        $ChromePath = Get-ChromePath
+        if ($ChromePath) {
+            Start-Process -FilePath $ChromePath -ArgumentList 'chrome://extensions/' -ErrorAction Stop
+        }
+        else {
+            Write-Host 'Google Chrome could not be located automatically.' -ForegroundColor Yellow
+        }
+    }
+    catch {
+        Write-Host ('Chrome could not be opened automatically: ' + $_.Exception.Message) -ForegroundColor Yellow
+    }
+
     Write-Host ''
     Write-Host 'First-time setup in Chrome:' -ForegroundColor Yellow
     Write-Host '  1. Open chrome://extensions/'
@@ -99,12 +123,12 @@ try {
     Write-Host '  3. Click Load unpacked.'
     Write-Host ('  4. Select: ' + $InstallDir)
     Write-Host ''
-    Write-Host 'The extension folder path was also copied to the clipboard when possible.'
+    Write-Host 'The extension folder path was copied to the clipboard when possible.'
     Write-Host 'For future updates, run this installer again and click Reload on the extension card.'
 }
 catch {
     Write-Host ''
-    Write-Host ('Installation failed: ' + $_.Exception.Message) -ForegroundColor Red
+    Write-Host ('CORE INSTALLATION FAILED: ' + $_.Exception.Message) -ForegroundColor Red
     exit 1
 }
 finally {
@@ -112,3 +136,5 @@ finally {
         Remove-Item -LiteralPath $TempRoot -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
+
+exit 0
