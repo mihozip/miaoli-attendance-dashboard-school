@@ -31,15 +31,17 @@ Chrome Extension · Manifest V3 · MIT License
 以一般使用者身分開啟 PowerShell，貼上：
 
 ```powershell
-irm https://raw.githubusercontent.com/mihozip/miaoli-attendance-dashboard-school/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/mihozip/miaoli-attendance-dashboard-school/main/install-windows.ps1 | iex
 ```
 
 腳本會自動：
 
 1. 下載 GitHub `main` 最新版本。
 2. 安裝／更新至 `%LOCALAPPDATA%\MiaoliAttendanceDashboardSchool`。
-3. 開啟 Chrome 擴充功能管理頁。
-4. 開啟已下載的擴充功能資料夾，並嘗試把路徑複製到剪貼簿。
+3. 驗證安裝資料夾內確實存在 `manifest.json`。
+4. 嘗試開啟 Chrome 擴充功能管理頁與安裝資料夾；即使 Explorer 或 Chrome 無法自動開啟，也不會把已完成的安裝判定為失敗。
+
+Windows 安裝腳本採純 ASCII 內容，以相容 Windows PowerShell 5.1 與 PowerShell 7。
 
 ### Windows 較安全的執行方式
 
@@ -47,11 +49,11 @@ irm https://raw.githubusercontent.com/mihozip/miaoli-attendance-dashboard-school
 
 ```powershell
 Invoke-WebRequest `
-  https://raw.githubusercontent.com/mihozip/miaoli-attendance-dashboard-school/main/install.ps1 `
-  -OutFile .\install.ps1
+  https://raw.githubusercontent.com/mihozip/miaoli-attendance-dashboard-school/main/install-windows.ps1 `
+  -OutFile .\install-windows.ps1
 
-notepad .\install.ps1
-powershell -ExecutionPolicy Bypass -File .\install.ps1
+notepad .\install-windows.ps1
+powershell -ExecutionPolicy Bypass -File .\install-windows.ps1
 ```
 
 ## macOS：Bash 一鍵安裝／更新
